@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="id">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Dashboard Admin - Kafe</title>
+		<link rel="stylesheet" href="style.css" />
+	</head>
+	<body>
+		<div class="card dashboard-container">
+			<div class="dashboard-header">
+				<div>
+					<span class="login-title">Panel Admin</span>
+					<h1>Tambah Poin Member</h1>
+				</div>
+				<a href="login.html" class="btn-logout">Keluar</a>
+			</div>
+
+			<div class="info-box">
+				💡 Masukkan ID Member atau Nomor HP pelanggan beserta jumlah poin dari
+				transaksi kasir hari ini.
+			</div>
+
+			<form id="addPointForm">
+				<div class="form-group">
+					<label for="memberIdentifier">ID Member / Nomor HP Pelanggan</label>
+					<input
+						type="text"
+						id="memberIdentifier"
+						class="form-input"
+						required
+						placeholder="Contoh: M001 atau 081234567890" />
+				</div>
+
+				<div class="form-group">
+					<label for="pointToAdd">Jumlah Poin yang Ditambahkan</label>
+					<input
+						type="number"
+						id="pointToAdd"
+						class="form-input"
+						required
+						min="1"
+						placeholder="Contoh: 50" />
+				</div>
+
+				<div class="form-group">
+					<label for="note">Keterangan</label>
+					<input
+						type="text"
+						id="note"
+						class="form-input"
+						placeholder="Keterangan" />
+				</div>
+
+				<button type="submit" id="submitPointBtn" class="btn-submit">
+					Simpan & Tambah Poin
+				</button>
+			</form>
+		</div>
+
+		<!-- Panggil config.js terlebih dahulu -->
+		<script src="config.js"></script>
+		<script>
+			document
+				.getElementById("addPointForm")
+				.addEventListener("submit", async function (e) {
+					e.preventDefault();
+
+					const identifier = document
+						.getElementById("memberIdentifier")
+						.value.trim();
+					const points = document.getElementById("pointToAdd").value.trim();
+					const note = document.getElementById("note").value.trim();
+					const submitBtn = document.getElementById("submitPointBtn");
+
+					submitBtn.disabled = true;
+					submitBtn.textContent = "Menyimpan data poin...";
+
+					try {
+						const response = await fetch(CONFIG.WEB_APP_URL, {
+							method: "POST",
+							headers: {
+								"Content-Type": "application/x-www-form-urlencoded",
+							},
+							body: new URLSearchParams({
+								action: "addPoint",
+								memberIdentifier: identifier,
+								points: points,
+								note: note,
+							}),
+						});
+
+						const data = await response.json();
+
+						if (data.success) {
+							alert(
+								`Berhasil! Poin sebanyak +${points} telah ditambahkan ke akun ${data.memberName}.`,
+							);
+							document.getElementById("addPointForm").reset();
+						} else {
+							alert(
+								data.message ||
+									"Gagal menambahkan poin. Pastikan ID Member/No. HP benar.",
+							);
+						}
+					} catch (error) {
+						console.error("Error:", error);
+						alert("Gagal terhubung ke server database.");
+					} finally {
+						submitBtn.disabled = false;
+						submitBtn.textContent = "Simpan & Tambah Poin";
+					}
+				});
+		</script>
+	</body>
+</html>

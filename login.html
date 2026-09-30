@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="id">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Login Staff - Kafe</title>
+		<link rel="stylesheet" href="style.css" />
+	</head>
+	<body>
+		<div class="card">
+			<div class="card-header">
+				<span class="login-title">Area Khusus Staff</span>
+				<h1>Login Admin & Owner</h1>
+				<p>Masukkan kredensial akun Anda untuk mengelola sistem</p>
+			</div>
+
+			<form id="loginForm">
+				<div class="form-group">
+					<label for="identifier">Username / Email</label>
+					<input
+						type="text"
+						id="identifier"
+						class="form-input"
+						required
+						placeholder="Contoh: admin@kafe.com" />
+				</div>
+
+				<div class="form-group">
+					<label for="password">Password / PIN</label>
+					<input
+						type="password"
+						id="password"
+						class="form-input"
+						required
+						placeholder="Masukkan password Anda" />
+				</div>
+
+				<button type="submit" id="loginBtn" class="btn-submit">
+					Masuk ke Dashboard
+				</button>
+			</form>
+
+			<a href="index.html" class="back-link"
+				>&larr; Kembali ke Cek Poin Customer</a
+			>
+		</div>
+
+		<!-- Panggil config.js terlebih dahulu -->
+		<script src="config.js"></script>
+		<script>
+			document
+				.getElementById("loginForm")
+				.addEventListener("submit", async function (e) {
+					e.preventDefault();
+
+					const identifier = document.getElementById("identifier").value.trim();
+					const password = document.getElementById("password").value.trim();
+					const loginBtn = document.getElementById("loginBtn");
+
+					loginBtn.disabled = true;
+					loginBtn.textContent = "Memeriksa akun...";
+
+					try {
+						const response = await fetch(CONFIG.WEB_APP_URL, {
+							method: "POST",
+							headers: {
+								"Content-Type": "application/x-www-form-urlencoded",
+							},
+							body: new URLSearchParams({
+								action: "loginStaff",
+								identifier: identifier,
+								password: password,
+							}),
+						});
+
+						const data = await response.json();
+
+						if (data.success) {
+							if (data.role === "owner") {
+								window.location.href = "dashboard-owner.html";
+							} else if (data.role === "admin") {
+								window.location.href = "dashboard-admin.html";
+							}
+						} else {
+							alert(
+								data.message ||
+									"Gagal login. Periksa kembali Username/Email dan Password Anda.",
+							);
+						}
+					} catch (error) {
+						console.error("Error:", error);
+						alert("Gagal terhubung ke server database.");
+					} finally {
+						loginBtn.disabled = false;
+						loginBtn.textContent = "Masuk ke Dashboard";
+					}
+				});
+		</script>
+	</body>
+</html>

@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="id">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Cek Poin Member Kafe</title>
+		<link rel="stylesheet" href="style.css" />
+	</head>
+	<body>
+		<div class="card">
+			<div class="card-header">
+				<span class="icon">☕</span>
+				<h1>Poin Member Kafe</h1>
+				<p>Masukkan Nomor HP atau ID Member Anda untuk cek poin</p>
+			</div>
+
+			<form id="checkPointForm">
+				<div class="form-group">
+					<label for="identifier">Nomor HP / ID Member</label>
+					<input
+						type="text"
+						id="identifier"
+						class="form-input"
+						required
+						placeholder="Contoh: 081234567890 atau M001" />
+				</div>
+				<button type="submit" id="submitBtn" class="btn-submit">
+					Cek Poin Sekarang
+				</button>
+			</form>
+
+			<div id="resultContainer" class="result-container hidden">
+				<h3 class="result-title">Hasil Pengecekan</h3>
+				<p id="resName" class="result-name">-</p>
+				<div class="points-box">
+					<span class="points-label">Total Poin Anda</span>
+					<span id="resPoints" class="points-value">0</span>
+				</div>
+				<p id="resStatus" class="result-status">-</p>
+			</div>
+
+			<div class="card-footer">
+				<a href="login.html">Login khusus Owner / Admin</a>
+			</div>
+		</div>
+
+		<!-- Panggil config.js terlebih dahulu -->
+		<script src="config.js"></script>
+		<script>
+			document
+				.getElementById("checkPointForm")
+				.addEventListener("submit", async function (e) {
+					e.preventDefault();
+
+					const identifier = document.getElementById("identifier").value.trim();
+					const submitBtn = document.getElementById("submitBtn");
+					const resultContainer = document.getElementById("resultContainer");
+
+					submitBtn.disabled = true;
+					submitBtn.textContent = "Mencari data...";
+					resultContainer.classList.add("hidden");
+
+					try {
+						const response = await fetch(
+							`${CONFIG.WEB_APP_URL}?action=checkPoint&id=${encodeURIComponent(identifier)}`,
+						);
+						const data = await response.json();
+
+						if (data.success) {
+							document.getElementById("resName").textContent = data.nama;
+							document.getElementById("resPoints").textContent = data.poin;
+							document.getElementById("resStatus").textContent =
+								`Status Member: ${data.status}`;
+							resultContainer.classList.remove("hidden");
+						} else {
+							alert(
+								data.message ||
+									"Data member tidak ditemukan. Periksa kembali Nomor HP/ID Anda.",
+							);
+						}
+					} catch (error) {
+						console.error("Error:", error);
+						alert(
+							"Gagal terhubung ke server database. (Pastikan URL di config.js sudah benar).",
+						);
+					} finally {
+						submitBtn.disabled = false;
+						submitBtn.textContent = "Cek Poin Sekarang";
+					}
+				});
+		</script>
+	</body>
+</html>
